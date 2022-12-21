@@ -11,8 +11,11 @@ const filterMap: { [key: string]: number } = {
 
 export const useOnSubmitSearch = () => {
   const [data, setData] = useState<LineChartData>({} as LineChartData);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const onSubmit = (symbol: string, timeRange: string) => {
+    setData({} as LineChartData);
+    setIsLoading(true);
     fetchTimeSeriesDaily(symbol)
       .then((res) => {
         const listData: [string, { "1. open": string }][] = Object.entries(res);
@@ -40,10 +43,12 @@ export const useOnSubmitSearch = () => {
           initialData.datasets[0].data.push(Number(newSet));
         }
 
+        setIsLoading(false);
+
         return initialData;
       })
       .then(setData);
   };
 
-  return { data, onSubmit };
+  return { data, onSubmit, isLoading };
 };

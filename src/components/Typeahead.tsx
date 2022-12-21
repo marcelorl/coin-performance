@@ -6,7 +6,7 @@ type TypeaheadProps = {
 };
 
 export const Typeahead: FC<TypeaheadProps> = ({ onSelectSymbol }) => {
-  const { list, setList, onChange } = useOnChangeTypeahead();
+  const { list, setList, onChange, isLoading } = useOnChangeTypeahead();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -30,6 +30,11 @@ export const Typeahead: FC<TypeaheadProps> = ({ onSelectSymbol }) => {
         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
       />
       <ul className="fixed z-10 shadow-[0_1px_10px_rgba(74,74,74,0.07)]">
+        {isLoading && (
+          <li className="cursor-pointer bg-white hover:bg-blue-100 p-2">
+            Loading ...
+          </li>
+        )}
         {list.map((item) => (
           <li
             className="cursor-pointer bg-white hover:bg-blue-100 p-2"

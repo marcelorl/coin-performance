@@ -8,7 +8,7 @@ import { useOnSubmitSearch } from "../hooks/useOnSubmitSearch";
 const App = () => {
   const [timeRange, setTimeRange] = useState("");
   const [symbol, setSymbol] = useState("");
-  const { data, onSubmit } = useOnSubmitSearch();
+  const { data, onSubmit, isLoading } = useOnSubmitSearch();
 
   const onSubmitSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -17,7 +17,7 @@ const App = () => {
   };
 
   return (
-    <div className="app">
+    <div className="app flex flex-col">
       <header className="w-full">
         <form onSubmit={onSubmitSearch} className="w-full flex p-3 gap-5">
           <Typeahead onSelectSymbol={setSymbol} />
@@ -27,7 +27,12 @@ const App = () => {
           </button>
         </form>
       </header>
-      <Chart data={data} />
+      {Boolean(Object.keys(data).length) && <Chart data={data} />}
+      {isLoading && (
+        <div className="w-full flex flex-1 justify-center items-center">
+          Loading ...
+        </div>
+      )}
     </div>
   );
 };
