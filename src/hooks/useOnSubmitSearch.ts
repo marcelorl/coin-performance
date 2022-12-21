@@ -1,25 +1,25 @@
 import { useState } from "react";
 import { fetchTimeSeries } from "../services/services.general";
 
-const filterMap = {
+const filterMap: { [key: string]: number } = {
   week: 6,
   month: 30,
   year: 365,
 };
 
-export const useOnClickSymbol = () => {
+export const useOnSubmitSearch = () => {
   const [data, setData] = useState<any>({});
 
-  const onClick = (symbol: string) => {
+  const onSubmit = (symbol: string, timeRange: string) => {
     fetchTimeSeries(symbol)
       .then((res) => {
         const listData = Object.entries(res);
-        const [firstLabel, firstValue] = listData[filterMap.week] as any;
+        const [firstLabel, firstValue] = listData[filterMap[timeRange]] as any;
         const initialData = {
           labels: [firstLabel] as string[],
           datasets: [
             {
-              label: "Coin Performance",
+              label: `${symbol} Performance`,
               data: ["0"] as string[],
               borderColor: "rgb(53, 162, 235)",
               backgroundColor: "rgba(53, 162, 235, 0.5)",
@@ -27,7 +27,7 @@ export const useOnClickSymbol = () => {
           ],
         };
 
-        for (let i = filterMap.week - 1; i >= 0; i--) {
+        for (let i = filterMap[timeRange] - 1; i >= 0; i--) {
           const [label, value] = listData[i] as any;
 
           initialData.labels.push(label);
@@ -43,5 +43,5 @@ export const useOnClickSymbol = () => {
       .then(setData);
   };
 
-  return { data, onClick };
+  return { data, onSubmit };
 };

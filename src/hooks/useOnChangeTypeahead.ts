@@ -15,5 +15,5 @@ export const useOnChangeTypeahead = () => {
   };
   const onChange = useCallback(debounce(onChangeInner, 500), []);
 
-  return { list, onChange };
+  return { list, setList, onChange };
 };
