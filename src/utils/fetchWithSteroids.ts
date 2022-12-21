@@ -23,7 +23,9 @@ export const getWithExpiry = (key: string) => {
   return item.value;
 };
 
-export const fetchWithSteroids = (key: string): any => {
+export const fetchWithSteroids = <T>(
+  key: string
+): ((url: string) => Promise<T>) => {
   const cache = getWithExpiry(key);
 
   return (url: string) => {

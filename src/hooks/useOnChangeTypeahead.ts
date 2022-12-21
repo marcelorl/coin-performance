@@ -1,10 +1,11 @@
-import { useCallback, useState } from "react";
-import { IFetchSymbolsMatch } from "../types/general.types";
-import { fetchSymbols } from "../services/services.general";
 import debounce from "lodash.debounce";
+import { useCallback, useState } from "react";
+
+import { IFetchSymbolsMatchResult } from "../types/general.types";
+import { fetchSymbols } from "../services/services.general";
 
 export const useOnChangeTypeahead = () => {
-  const [list, setList] = useState<IFetchSymbolsMatch[]>([]);
+  const [list, setList] = useState<IFetchSymbolsMatchResult[]>([]);
 
   const onChangeInner = (keyword: string) => {
     if (keyword.length) {

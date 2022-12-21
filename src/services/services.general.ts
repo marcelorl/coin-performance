@@ -1,25 +1,31 @@
-import { IFetchSymbols, IFetchSymbolsMatch } from "../types/general.types";
+import {
+  IFetchSymbolsResponse,
+  IFetchSymbolsMatchResult,
+  IFetchTimeSeriesDailyResult,
+  IFetchTimeSeriesDailyResponse,
+} from "../types/general.types";
 import { fetchWithSteroids } from "../utils/fetchWithSteroids";
 
 export const fetchSymbols = (
   keyword: string
-): Promise<IFetchSymbolsMatch[]> => {
+): Promise<IFetchSymbolsMatchResult[]> => {
   const key = `search-${keyword}`;
-  return fetchWithSteroids(key)(
+  return fetchWithSteroids<IFetchSymbolsResponse>(key)(
     `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${keyword}&apikey=${
       import.meta.env.ALPHAVANTAGE_API_KEY
     }`
-  ).then((res: IFetchSymbols) => {
-    console.log("======>", res);
-    return res.bestMatches;
-  });
+  ).then((res) => res.bestMatches);
 };
 
-export const fetchTimeSeries = (symbol: string) => {
+export const fetchTimeSeriesDaily = (
+  symbol: string
+): Promise<IFetchTimeSeriesDailyResult> => {
   const key = `time-series-${symbol}`;
-  return fetchWithSteroids(key)(
+  return fetchWithSteroids<IFetchTimeSeriesDailyResponse>(key)(
     `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${
       import.meta.env.ALPHAVANTAGE_API_KEY
     }&outputsize=full`
-  ).then((res: any) => res["Time Series (Daily)"]);
+  ).then((res) => res["Time Series (Daily)"]);
 };
+
+export const fetchTimeSeriesIntraday = (symbol: string) => {};

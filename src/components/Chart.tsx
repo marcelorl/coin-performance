@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,6 +10,8 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+
+import { LineChartData } from "../types/general.types";
 
 ChartJS.register(
   CategoryScale,
@@ -34,7 +36,7 @@ export const options = {
   },
 };
 
-export const Chart: FC<any> = ({ data }) => {
+export const Chart: FC<{ data: LineChartData }> = ({ data }) => {
   if (!Object.keys(data).length) {
     return <div>not rendered</div>;
   }

@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { fetchTimeSeries } from "../services/services.general";
+
+import { fetchTimeSeriesDaily } from "../services/services.general";
+import { LineChartData } from "../types/general.types";
 
 const filterMap: { [key: string]: number } = {
   week: 6,
@@ -8,19 +10,19 @@ const filterMap: { [key: string]: number } = {
 };
 
 export const useOnSubmitSearch = () => {
-  const [data, setData] = useState<any>({});
+  const [data, setData] = useState<LineChartData>({} as LineChartData);
 
   const onSubmit = (symbol: string, timeRange: string) => {
-    fetchTimeSeries(symbol)
+    fetchTimeSeriesDaily(symbol)
       .then((res) => {
-        const listData = Object.entries(res);
-        const [firstLabel, firstValue] = listData[filterMap[timeRange]] as any;
-        const initialData = {
-          labels: [firstLabel] as string[],
+        const listData: [string, { "1. open": string }][] = Object.entries(res);
+        const [firstLabel, firstValue] = listData[filterMap[timeRange]];
+        const initialData: LineChartData = {
+          labels: [firstLabel],
           datasets: [
             {
               label: `${symbol} Performance`,
-              data: ["0"] as string[],
+              data: [0],
               borderColor: "rgb(53, 162, 235)",
               backgroundColor: "rgba(53, 162, 235, 0.5)",
             },
@@ -28,14 +30,14 @@ export const useOnSubmitSearch = () => {
         };
 
         for (let i = filterMap[timeRange] - 1; i >= 0; i--) {
-          const [label, value] = listData[i] as any;
+          const [label, value] = listData[i];
 
-          initialData.labels.push(label);
+          initialData!.labels!.push(label);
           const newSet = Number(
             (Number(value["1. open"]) * 100) / Number(firstValue["1. open"]) -
               100
           ).toFixed(2);
-          initialData.datasets[0].data.push(newSet);
+          initialData.datasets[0].data.push(Number(newSet));
         }
 
         return initialData;
