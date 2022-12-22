@@ -61,13 +61,13 @@ export const useOnSubmitSearch = () => {
           labels: [],
           datasets: [
             {
-              label: `${symbol} Performance`,
+              label: `${symbol}`,
               data: [],
               borderColor: "rgb(53, 162, 235)",
               backgroundColor: "rgba(53, 162, 235, 0.5)",
             },
             {
-              label: `SPY Performance`,
+              label: `SPY`,
               data: [],
               borderColor: "rgb(236, 54, 54)",
               backgroundColor: "rgba(236, 54, 54, 0.5)",
