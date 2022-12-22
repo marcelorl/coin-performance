@@ -12,6 +12,7 @@ const filterMap: { [key: string]: number } = {
 export const useOnSubmitSearch = () => {
   const [data, setData] = useState<LineChartData>({} as LineChartData);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [csvReport, setCsvReport] = useState<any>();
 
   const onSubmit = (symbol: string, timeRange: string) => {
     setData({} as LineChartData);
@@ -20,6 +21,7 @@ export const useOnSubmitSearch = () => {
       .then((res) => {
         const listData: [string, { "1. open": string }][] = Object.entries(res);
         const [firstLabel, firstValue] = listData[filterMap[timeRange]];
+        const csvData = [{ label: firstLabel, value: 0 }];
         const initialData: LineChartData = {
           labels: [firstLabel],
           datasets: [
@@ -41,14 +43,19 @@ export const useOnSubmitSearch = () => {
               100
           ).toFixed(2);
           initialData.datasets[0].data.push(Number(newSet));
+          csvData.push({ label, value: Number(newSet) });
         }
 
         setIsLoading(false);
+        setCsvReport({
+          data: csvData,
+          filename: `${symbol}_${timeRange}_performance_report.csv`,
+        });
 
         return initialData;
       })
       .then(setData);
   };
 
-  return { data, onSubmit, isLoading };
+  return { data, onSubmit, isLoading, csvReport };
 };

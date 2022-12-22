@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { CSVLink } from "react-csv";
 
 import { Chart } from "./Chart";
 import { SelectTimeRange } from "./SelectTimeRange";
@@ -8,7 +9,7 @@ import { useOnSubmitSearch } from "../hooks/useOnSubmitSearch";
 const App = () => {
   const [timeRange, setTimeRange] = useState("");
   const [symbol, setSymbol] = useState("");
-  const { data, onSubmit, isLoading } = useOnSubmitSearch();
+  const { data, onSubmit, isLoading, csvReport } = useOnSubmitSearch();
 
   const onSubmitSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,6 +26,14 @@ const App = () => {
           <button className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 ml-10 py-2.5 text-center">
             Search
           </button>
+          {csvReport && (
+            <CSVLink
+              {...csvReport}
+              className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
+            >
+              Export to CSV
+            </CSVLink>
+          )}
         </form>
       </header>
       {Boolean(Object.keys(data).length) && <Chart data={data} />}
