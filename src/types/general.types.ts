@@ -13,6 +13,10 @@ export interface IFetchTimeSeriesDailyResponse {
   "Time Series (Daily)": IFetchTimeSeriesDailyResult;
 }
 
+export interface IFetchTimeSeriesIntradayResponse {
+  "Time Series (60min)": IFetchTimeSeriesDailyResult;
+}
+
 export interface IFetchTimeSeriesDailyResult {
   [key: string]: {
     "1. open": string;

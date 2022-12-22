@@ -12,7 +12,10 @@ const filterMap: { [key: string]: number } = {
 export const useOnSubmitSearch = () => {
   const [data, setData] = useState<LineChartData>({} as LineChartData);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [csvReport, setCsvReport] = useState<any>();
+  const [csvReport, setCsvReport] = useState<{
+    data: object[];
+    filename: string;
+  }>();
 
   const onSubmit = (symbol: string, timeRange: string) => {
     setData({} as LineChartData);
