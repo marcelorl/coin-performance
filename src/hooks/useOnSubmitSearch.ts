@@ -1,12 +1,31 @@
 import { useState } from "react";
+import dayjs from "dayjs";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 
 import { fetchTimeSeriesDaily } from "../services/services.general";
-import { LineChartData } from "../types/general.types";
+import {
+  IFetchTimeSeriesDailyResult,
+  LineChartData,
+} from "../types/general.types";
 
-const filterMap: { [key: string]: number } = {
-  week: 6,
-  month: 30,
-  year: 365,
+dayjs.extend(isSameOrBefore);
+
+const filterMap = {
+  week: [1, "week"] as const,
+  month: [1, "month"] as const,
+  year: [1, "year"] as const,
+};
+
+const getFirstValidDate = (
+  arr: IFetchTimeSeriesDailyResult[],
+  targetDate: string
+): IFetchTimeSeriesDailyResult => {
+  for (let i = 0; i < arr.length; i++) {
+    if (dayjs(arr[i][0]).isSameOrBefore(targetDate)) {
+      return arr[i];
+    }
+  }
+  return arr[arr.length - 1];
 };
 
 export const useOnSubmitSearch = () => {
@@ -17,36 +36,75 @@ export const useOnSubmitSearch = () => {
     filename: string;
   }>();
 
-  const onSubmit = (symbol: string, timeRange: string) => {
+  const onSubmit = async (symbol: string, timeRange: string) => {
     setData({} as LineChartData);
     setIsLoading(true);
-    fetchTimeSeriesDaily(symbol)
+    const csvData: object[] = [];
+
+    await Promise.all([
+      fetchTimeSeriesDaily(symbol),
+      fetchTimeSeriesDaily("spy"),
+    ])
       .then((res) => {
-        const listData: [string, { "1. open": string }][] = Object.entries(res);
-        const [firstLabel, firstValue] = listData[filterMap[timeRange]];
-        const csvData = [{ label: firstLabel, value: 0 }];
+        const [symbolRes, spyRes] = res;
+        const [lastDate] = spyRes[0];
+
+        const targetDate = dayjs(lastDate)
+          // @ts-ignore
+          .subtract(...filterMap[timeRange])
+          .format("YYYY-MM-DD");
+
+        const symbolFirstDate = getFirstValidDate(symbolRes, targetDate);
+        const spyFirstDate = getFirstValidDate(spyRes, targetDate);
+
         const initialData: LineChartData = {
-          labels: [firstLabel],
+          labels: [],
           datasets: [
             {
               label: `${symbol} Performance`,
-              data: [0],
+              data: [],
               borderColor: "rgb(53, 162, 235)",
               backgroundColor: "rgba(53, 162, 235, 0.5)",
+            },
+            {
+              label: `SPY Performance`,
+              data: [],
+              borderColor: "rgb(236, 54, 54)",
+              backgroundColor: "rgba(236, 54, 54, 0.5)",
             },
           ],
         };
 
-        for (let i = filterMap[timeRange] - 1; i >= 0; i--) {
-          const [label, value] = listData[i];
+        for (let i = 0; i < spyRes.length; i++) {
+          const [spyLabel, spyValue] = spyRes[i];
+          const [, symbolValue] = symbolRes[i];
+          initialData.labels?.unshift(spyLabel);
 
-          initialData!.labels!.push(label);
-          const newSet = Number(
-            (Number(value["1. open"]) * 100) / Number(firstValue["1. open"]) -
+          const spyCoordinate = Number(
+            (Number(spyValue["1. open"]) * 100) /
+              Number(spyFirstDate[1]["1. open"]) -
               100
           ).toFixed(2);
-          initialData.datasets[0].data.push(Number(newSet));
-          csvData.push({ label, value: Number(newSet) });
+          const symbolCoordinate = Number(
+            (Number(symbolValue["1. open"]) * 100) /
+              Number(symbolFirstDate[1]["1. open"]) -
+              100
+          ).toFixed(2);
+
+          csvData.unshift({
+            label: spyLabel,
+            [`${symbol}-performance`]: symbolCoordinate,
+            [`${symbol}-open`]: symbolValue["1. open"],
+            "spy-performance": spyCoordinate,
+            "spy-open": spyValue["1. open"],
+          });
+
+          initialData.datasets[0].data.unshift(Number(symbolCoordinate));
+          initialData.datasets[1].data.unshift(Number(spyCoordinate));
+
+          if (spyLabel === spyFirstDate[0]) {
+            break;
+          }
         }
 
         setIsLoading(false);

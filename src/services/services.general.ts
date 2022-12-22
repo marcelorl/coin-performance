@@ -20,13 +20,13 @@ export const fetchSymbols = (
 
 export const fetchTimeSeriesDaily = (
   symbol: string
-): Promise<IFetchTimeSeriesDailyResult> => {
+): Promise<IFetchTimeSeriesDailyResult[]> => {
   const key = `time-series-daily-${symbol}`;
   return fetchWithSteroids<IFetchTimeSeriesDailyResponse>(key)(
     `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&apikey=${
       import.meta.env.ALPHAVANTAGE_API_KEY
     }&outputsize=full`
-  ).then((res) => res["Time Series (Daily)"]);
+  ).then((res) => Object.entries(res["Time Series (Daily)"]));
 };
 
 export const fetchTimeSeriesIntraday = (
