@@ -1,5 +1,5 @@
 import { useState } from "react";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 
 import { fetchTimeSeriesDaily } from "../services/services.general";
@@ -16,16 +16,16 @@ const filterMap = {
   year: [1, "year"] as const,
 };
 
+const formatDate = "YYYY-MM-DD";
+
 const getFirstValidDate = (
-  arr: IFetchTimeSeriesDailyResult[],
-  targetDate: string
-): IFetchTimeSeriesDailyResult => {
-  for (let i = 0; i < arr.length; i++) {
-    if (dayjs(arr[i][0]).isSameOrBefore(targetDate)) {
-      return arr[i];
-    }
+  obj: IFetchTimeSeriesDailyResult,
+  targetDate: Dayjs
+): string => {
+  while (!obj[targetDate.format(formatDate)]) {
+    targetDate = targetDate.add(1, "day");
   }
-  return arr[arr.length - 1];
+  return obj[targetDate.format(formatDate)]["1. open"];
 };
 
 export const useOnSubmitSearch = () => {
@@ -47,12 +47,10 @@ export const useOnSubmitSearch = () => {
     ])
       .then((res) => {
         const [symbolRes, spyRes] = res;
-        const [lastDate] = spyRes[0];
 
-        const targetDate = dayjs(lastDate)
+        let targetDate = dayjs()
           // @ts-ignore
-          .subtract(...filterMap[timeRange])
-          .format("YYYY-MM-DD");
+          .subtract(...filterMap[timeRange]);
 
         const symbolFirstDate = getFirstValidDate(symbolRes, targetDate);
         const spyFirstDate = getFirstValidDate(spyRes, targetDate);
@@ -75,36 +73,41 @@ export const useOnSubmitSearch = () => {
           ],
         };
 
-        for (let i = 0; i < spyRes.length; i++) {
-          const [spyLabel, spyValue] = spyRes[i];
-          const [, symbolValue] = symbolRes[i];
-          initialData.labels?.unshift(spyLabel);
+        while (targetDate.isSameOrBefore(dayjs())) {
+          const label = targetDate.format(formatDate);
+          const spyValue = spyRes[label];
+          const symbolValue = symbolRes[label];
+
+          if (!spyValue) {
+            targetDate = targetDate.add(1, "day");
+            continue;
+          }
+
+          initialData.labels?.push(label);
 
           const spyCoordinate = Number(
-            (Number(spyValue["1. open"]) * 100) /
-              Number(spyFirstDate[1]["1. open"]) -
-              100
+            (Number(spyValue["1. open"]) * 100) / Number(spyFirstDate) - 100
           ).toFixed(2);
-          const symbolCoordinate = Number(
-            (Number(symbolValue["1. open"]) * 100) /
-              Number(symbolFirstDate[1]["1. open"]) -
-              100
-          ).toFixed(2);
+          let symbolCoordinate = "0";
+          if (symbolValue) {
+            symbolCoordinate = Number(
+              (Number(symbolValue["1. open"]) * 100) / Number(symbolFirstDate) -
+                100
+            ).toFixed(2);
+          }
+
+          initialData.datasets[0].data.push(Number(symbolCoordinate));
+          initialData.datasets[1].data.push(Number(spyCoordinate));
 
           csvData.unshift({
-            label: spyLabel,
+            label,
             [`${symbol}-performance`]: symbolCoordinate,
-            [`${symbol}-open`]: symbolValue["1. open"],
+            [`${symbol}-open`]: symbolValue ? symbolValue["1. open"] : "N/A",
             "spy-performance": spyCoordinate,
             "spy-open": spyValue["1. open"],
           });
 
-          initialData.datasets[0].data.unshift(Number(symbolCoordinate));
-          initialData.datasets[1].data.unshift(Number(spyCoordinate));
-
-          if (spyLabel === spyFirstDate[0]) {
-            break;
-          }
+          targetDate = targetDate.add(1, "day");
         }
 
         setIsLoading(false);

@@ -10,22 +10,17 @@ export interface IFetchSymbolsMatchResult {
 }
 
 export interface IFetchTimeSeriesDailyResponse {
-  "Time Series (Daily)": {
-    [key: string]: {
-      "1. open": string;
-    };
-  };
+  "Time Series (Daily)": IFetchTimeSeriesDailyResult;
 }
 
 export interface IFetchTimeSeriesIntradayResponse {
   "Time Series (60min)": IFetchTimeSeriesDailyResult;
 }
 
-export type IFetchTimeSeriesDailyResult = [
-  string,
-  {
+export type IFetchTimeSeriesDailyResult = {
+  [key: string]: {
     "1. open": string;
-  }
-];
+  };
+};
 
 export type LineChartData = ChartData<"line", DefaultDataPoint<"line">, string>;
